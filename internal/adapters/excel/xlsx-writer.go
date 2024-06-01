@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"escrituras/internal/domain/xlsx"
 	"fmt"
-	"io"
 	"log"
 	"log/slog"
 
@@ -25,35 +24,15 @@ type fileStyles struct {
 	titleStyle   int
 }
 
-type excelAdapter struct{}
+type xlsxWriter struct{}
 
-func (e *excelAdapter) Read(r io.Reader) (result [][]string, err error) {
-
-	f, err := excelize.OpenReader(r)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	for i := 0; i < f.SheetCount; i++ {
-		sheetName := f.GetSheetName(i)
-		rows, err := f.GetRows(sheetName)
-		if err != nil {
-			return result, err
-		}
-		result = append(result, rows...)
-
-	}
-	return
-
-}
-
-func (e *excelAdapter) Write(sheets []xlsx.Sheet) (bytes.Buffer, error) {
+// Write implements xlsx.Writer.
+func (x *xlsxWriter) Write(sheets []xlsx.Sheet) (bytes.Buffer, error) {
 
 	var b bytes.Buffer
 	f := excelize.NewFile()
 
-	e.createSheets(f, sheets)
+	x.createSheets(f, sheets)
 
 	writer := bufio.NewWriter(&b)
 	if err := f.Write(writer); err != nil {
@@ -63,7 +42,7 @@ func (e *excelAdapter) Write(sheets []xlsx.Sheet) (bytes.Buffer, error) {
 	return b, nil
 }
 
-func (e *excelAdapter) createSheets(f *excelize.File, sheets []xlsx.Sheet) {
+func (x *xlsxWriter) createSheets(f *excelize.File, sheets []xlsx.Sheet) {
 	styles := fileStyles{}
 	titleStyle, _ := f.NewStyle(TitleStyle)
 	defaultStyle, _ := f.NewStyle(DefaultStyle)
@@ -75,12 +54,12 @@ func (e *excelAdapter) createSheets(f *excelize.File, sheets []xlsx.Sheet) {
 	styles.floatStyle = floatStyle
 
 	for _, sheet := range sheets {
-		e.createSheet(f, sheet, &styles)
+		x.createSheet(f, sheet, &styles)
 	}
 
 }
 
-func (e *excelAdapter) createSheet(f *excelize.File, sheet xlsx.Sheet, styles *fileStyles) {
+func (x *xlsxWriter) createSheet(f *excelize.File, sheet xlsx.Sheet, styles *fileStyles) {
 	currentRowIndex := 1
 	sheetName := sheet.Name
 	if len(sheetName) > 31 {
@@ -93,13 +72,13 @@ func (e *excelAdapter) createSheet(f *excelize.File, sheet xlsx.Sheet, styles *f
 	if err != nil {
 		log.Fatal(err)
 	}
-	currentRowIndex = e.setTitle(sw, sheet.Columns, currentRowIndex, styles.titleStyle)
-	e.setTable(sw, currentRowIndex, sheet.Columns, sheet.Data, *styles)
+	currentRowIndex = x.setTitle(sw, sheet.Columns, currentRowIndex, styles.titleStyle)
+	x.setTable(sw, currentRowIndex, sheet.Columns, sheet.Data, *styles)
 	sw.Flush()
 
 }
 
-func (e *excelAdapter) setTitle(sw *excelize.StreamWriter, columns []xlsx.Column, currentRowIndex int, styleId int) int {
+func (x *xlsxWriter) setTitle(sw *excelize.StreamWriter, columns []xlsx.Column, currentRowIndex int, styleId int) int {
 	titles := []interface{}{}
 
 	for index, title := range columns {
@@ -113,7 +92,7 @@ func (e *excelAdapter) setTitle(sw *excelize.StreamWriter, columns []xlsx.Column
 		}
 		titles = append(titles, cel)
 	}
-	cell := e.cell(currentRowIndex, 0)
+	cell := x.cell(currentRowIndex, 0)
 	if err := sw.SetRow(cell, titles); err != nil {
 		slog.Error("Erro ao criar titulo", "err", err.Error())
 	}
@@ -122,22 +101,22 @@ func (e *excelAdapter) setTitle(sw *excelize.StreamWriter, columns []xlsx.Column
 	return currentRowIndex
 }
 
-func (e *excelAdapter) setTable(sw *excelize.StreamWriter, currentRowIndex int, columns []xlsx.Column, data []xlsx.Data, styles fileStyles) int {
+func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, columns []xlsx.Column, data []xlsx.Data, styles fileStyles) int {
 	for i := 0; i < len(data); i++ {
-		cell := e.cell(currentRowIndex, 0)
+		cell := x.cell(currentRowIndex, 0)
 		rows := make([]interface{}, 0)
 		for _, col := range columns {
 			var cel interface{}
 			value := data[i][col.Id]
 			switch col.Type {
 			case "moeda":
-				cel = e.getCell(value, styles.floatStyle)
+				cel = x.getCell(value, styles.floatStyle)
 			case "data":
-				cel = e.getCell(value, styles.dateStyle)
+				cel = x.getCell(value, styles.dateStyle)
 			case "mapBool":
-				cel = e.getRichTextCell(value)
+				cel = x.getRichTextCell(value)
 			default:
-				cel = e.getCell(value, styles.defaultStyle)
+				cel = x.getCell(value, styles.defaultStyle)
 
 			}
 			rows = append(rows, cel)
@@ -152,7 +131,7 @@ func (e *excelAdapter) setTable(sw *excelize.StreamWriter, currentRowIndex int, 
 	return currentRowIndex
 }
 
-func (e *excelAdapter) getCell(value interface{}, styleId int) excelize.Cell {
+func (*xlsxWriter) getCell(value interface{}, styleId int) excelize.Cell {
 
 	return excelize.Cell{
 		Value:   value,
@@ -160,7 +139,7 @@ func (e *excelAdapter) getCell(value interface{}, styleId int) excelize.Cell {
 	}
 }
 
-func (*excelAdapter) getRichTextCell(value interface{}) []excelize.RichTextRun {
+func (*xlsxWriter) getRichTextCell(value interface{}) []excelize.RichTextRun {
 	data := value.(map[string]bool)
 	richTexts := make([]excelize.RichTextRun, 0)
 	for key, value := range data {
@@ -180,19 +159,14 @@ func (*excelAdapter) getRichTextCell(value interface{}) []excelize.RichTextRun {
 
 }
 
-func (*excelAdapter) SheetName(f *excelize.File, sheetIndex int) string {
+func (*xlsxWriter) SheetName(f *excelize.File, sheetIndex int) string {
 	return f.GetSheetName(sheetIndex)
 }
 
-func (e *excelAdapter) cell(currentRowIndex, coll int) string {
+func (x *xlsxWriter) cell(currentRowIndex, coll int) string {
 
 	return fmt.Sprintf("%s%d", collLetters[coll], currentRowIndex)
 }
-
-func NewExcelAdapter() xlsx.Reader {
-	return &excelAdapter{}
-}
-
 func NewXlsxWriterAdapter() xlsx.Writer {
-	return &excelAdapter{}
+	return &xlsxWriter{}
 }

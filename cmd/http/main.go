@@ -17,9 +17,9 @@ import (
 // @termsOfService http://swagger.io/terms/
 func main() {
 
-	excelAdaper := excel.NewExcelAdapter()
+	xlsxReader := excel.NewXlsxReaderAdapter()
 
-	excelReadHandler := handlers.ReadExcelFileHandler(excelAdaper)
+	excelReadHandler := handlers.ReadExcelFileHandler(xlsxReader)
 	excelWriterAdapter := excel.NewXlsxWriterAdapter()
 	xlsxWriterHandler := handlers.NewXlsxWriterHandler(excelWriterAdapter)
 
