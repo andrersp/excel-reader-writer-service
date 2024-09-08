@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"encoding/json"
 	"escrituras/internal/domain/xlsx"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 type readExcelFile struct {
@@ -17,30 +18,24 @@ type readExcelFile struct {
 // @param file formData file true "this is a excel file"
 // @Success 200	 {array} []string "ok"
 // @router /reader [post]
-func (re *readExcelFile) Execute(w http.ResponseWriter, r *http.Request) {
+func (re *readExcelFile) Execute(c echo.Context) error {
 
-	f, fh, err := r.FormFile("file")
+	file, err := c.FormFile("file")
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
+		return err
 	}
-	defer f.Close()
-
-	if fh.Size <= 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("err"))
-		return
-
-	}
-
-	response, err := re.excel.Read(f)
+	src, err := file.Open()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return err
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	defer src.Close()
+
+	response, err := re.excel.Read(src)
+	if err != nil {
+
+		return err
+	}
+	return c.JSON(http.StatusOK, response)
 
 }
 

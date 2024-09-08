@@ -75,15 +75,13 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/XlsxRequest'
+      produces:
+      - application/vnd.ms-excel
       responses:
         "200":
-          description: ok
+          description: OK
           schema:
-            items:
-              items:
-                type: string
-              type: array
-            type: array
+            type: file
       tags:
       - Writer
 swagger: "2.0"

@@ -3,13 +3,23 @@ package main
 import (
 	_ "escrituras/docs"
 	"escrituras/internal/adapters/api"
+	"escrituras/internal/adapters/config"
 	"escrituras/internal/adapters/excel"
 	"escrituras/internal/adapters/handlers"
+	"log/slog"
+	"net/http"
+	"os"
 
 	"log"
-
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
+
+func init() {
+	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	slog.SetDefault(logger)
+	if err := config.LoadConfig(); err != nil {
+		log.Fatal(err)
+	}
+}
 
 // @title Excel Reader and Writer
 // @version 1.0
@@ -23,12 +33,11 @@ func main() {
 	excelWriterAdapter := excel.NewXlsxWriterAdapter()
 	xlsxWriterHandler := handlers.NewXlsxWriterHandler(excelWriterAdapter)
 
-	api := api.NewApiServer(":8080")
-	api.Post("/reader", excelReadHandler.Execute)
-	api.Post("/writer", xlsxWriterHandler.Execute)
-	api.Get("/docs/*", httpSwagger.Handler())
+	api := api.NewApi()
+	api.Add(http.MethodPost, "/reader", excelReadHandler.Execute)
+	api.Add(http.MethodPost, "/writer", xlsxWriterHandler.Execute)
 
-	if err := api.Run(); err != nil {
+	if err := api.Start(); err != nil {
 		log.Fatal(err)
 	}
 	// http.HandleFunc("POST /read", ReadFile)
