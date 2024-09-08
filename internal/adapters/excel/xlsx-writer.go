@@ -3,7 +3,7 @@ package excel
 import (
 	"bufio"
 	"bytes"
-	"escrituras/internal/domain/xlsx"
+	"excel/internal/domain/xlsx"
 	"fmt"
 	"log"
 	"log/slog"

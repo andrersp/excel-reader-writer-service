@@ -1,7 +1,7 @@
 package excel
 
 import (
-	"escrituras/internal/domain/xlsx"
+	"excel/internal/domain/xlsx"
 	"io"
 
 	"github.com/xuri/excelize/v2"

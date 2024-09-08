@@ -2,8 +2,8 @@ package api
 
 import (
 	"context"
-	"escrituras/internal/adapters/api/middlewares"
-	"escrituras/internal/adapters/config"
+	"excel/internal/adapters/api/middlewares"
+	"excel/internal/adapters/config"
 	"fmt"
 	"net/http"
 	"os"

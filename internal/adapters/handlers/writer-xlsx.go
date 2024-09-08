@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"escrituras/internal/domain/xlsx"
+	"excel/internal/domain/xlsx"
 
 	"github.com/labstack/echo/v4"
 )

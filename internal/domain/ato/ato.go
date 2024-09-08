@@ -1,6 +1,6 @@
 package ato
 
-import "escrituras/internal/domain/parte"
+import "excel/internal/domain/parte"
 
 type Ato struct {
 	Tipo        string
