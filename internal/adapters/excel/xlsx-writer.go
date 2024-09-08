@@ -33,6 +33,7 @@ func (x *xlsxWriter) Write(sheets []xlsx.Sheet) (bytes.Buffer, error) {
 	f := excelize.NewFile()
 
 	x.createSheets(f, sheets)
+	f.SaveAs("file.xlsx")
 
 	writer := bufio.NewWriter(&b)
 	if err := f.Write(writer); err != nil {
@@ -101,7 +102,7 @@ func (x *xlsxWriter) setTitle(sw *excelize.StreamWriter, columns []xlsx.Column, 
 	return currentRowIndex
 }
 
-func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, columns []xlsx.Column, data []xlsx.Data, styles fileStyles) int {
+func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, columns []xlsx.Column, data []map[string]any, styles fileStyles) int {
 	for i := 0; i < len(data); i++ {
 		cell := x.cell(currentRowIndex, 0)
 		rows := make([]interface{}, 0)
@@ -109,11 +110,11 @@ func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, co
 			var cel interface{}
 			value := data[i][col.Id]
 			switch col.Type {
-			case "moeda":
+			case xlsx.FLOAT:
 				cel = x.getCell(value, styles.floatStyle)
-			case "data":
+			case xlsx.DATE:
 				cel = x.getCell(value, styles.dateStyle)
-			case "mapBool":
+			case xlsx.BOOLEAN:
 				cel = x.getRichTextCell(value)
 			default:
 				cel = x.getCell(value, styles.defaultStyle)

@@ -4,24 +4,25 @@ type XlsxRequest struct {
 	Sheets []Sheet `json:"sheets"`
 } //@Name XlsxRequest
 
-type Data map[string]interface{}
-
 type Column struct {
 	Id    string  `json:"id"`
 	Title string  `json:"title"`
 	Width float64 `json:"width"`
-	Type  string  `json:"type"`
+	Type  Type    `json:"type"`
 } //@Name Column
 
-// type AdditionalData struct {
-// 	Title string `json:"title"`
-// 	Value string `json:"value"`
-// 	Type  string `json:"type"`
-// }
-
 type Sheet struct {
-	Name    string   `json:"name"`
-	Columns []Column `json:"columns"`
-	// AdditionalInfo *[]AdditionalData `json:"additioanlData"`
-	Data []Data `json:"data"`
+	Name    string           `json:"name"`
+	Columns []Column         `json:"columns"`
+	Data    []map[string]any `json:"data"`
 } //@Name Sheet
+
+type Type string
+
+// const ColumnType string
+const (
+	BOOLEAN Type = "BOOLEAN"
+	DATE    Type = "DATE"
+	FLOAT   Type = "FLOAT"
+	STRING  Type = "STRING"
+)

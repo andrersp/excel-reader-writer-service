@@ -6,7 +6,7 @@ definitions:
       title:
         type: string
       type:
-        type: string
+        $ref: '#/definitions/xlsx.Type'
       width:
         type: number
     type: object
@@ -17,9 +17,9 @@ definitions:
           $ref: '#/definitions/Column'
         type: array
       data:
-        description: AdditionalInfo *[]AdditionalData `json:"additioanlData"`
         items:
-          $ref: '#/definitions/xlsx.Data'
+          additionalProperties: {}
+          type: object
         type: array
       name:
         type: string
@@ -31,9 +31,18 @@ definitions:
           $ref: '#/definitions/Sheet'
         type: array
     type: object
-  xlsx.Data:
-    additionalProperties: true
-    type: object
+  xlsx.Type:
+    enum:
+    - INT
+    - DATE
+    - FLOAT
+    - STRING
+    type: string
+    x-enum-varnames:
+    - INT
+    - DATE
+    - FLOAT
+    - STRING
 info:
   contact: {}
   description: Service to read and writer xlsx.

@@ -95,7 +95,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/xlsx.Type"
                 },
                 "width": {
                     "type": "number"
@@ -112,10 +112,10 @@ const docTemplate = `{
                     }
                 },
                 "data": {
-                    "description": "AdditionalInfo *[]AdditionalData ` + "`" + `json:\"additioanlData\"` + "`" + `",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/xlsx.Data"
+                        "type": "object",
+                        "additionalProperties": {}
                     }
                 },
                 "name": {
@@ -134,9 +134,20 @@ const docTemplate = `{
                 }
             }
         },
-        "xlsx.Data": {
-            "type": "object",
-            "additionalProperties": true
+        "xlsx.Type": {
+            "type": "string",
+            "enum": [
+                "INT",
+                "DATE",
+                "FLOAT",
+                "STRING"
+            ],
+            "x-enum-varnames": [
+                "INT",
+                "DATE",
+                "FLOAT",
+                "STRING"
+            ]
         }
     }
 }`
