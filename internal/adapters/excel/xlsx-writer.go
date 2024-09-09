@@ -114,7 +114,7 @@ func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, co
 				cel = x.getCell(value, styles.floatStyle)
 			case xlsx.DATE:
 				cel = x.getCell(value, styles.dateStyle)
-			case xlsx.BOOLEAN:
+			case xlsx.LIST:
 				cel = x.getRichTextCell(value)
 			default:
 				cel = x.getCell(value, styles.defaultStyle)
@@ -141,19 +141,22 @@ func (*xlsxWriter) getCell(value interface{}, styleId int) excelize.Cell {
 }
 
 func (*xlsxWriter) getRichTextCell(value interface{}) []excelize.RichTextRun {
-	data := value.(map[string]bool)
 	richTexts := make([]excelize.RichTextRun, 0)
-	for key, value := range data {
-		richText := excelize.RichTextRun{
-			Text: fmt.Sprintf("%s\n", key),
-			Font: &excelize.Font{
-				Family: "Century Gothic",
-				Size:   8,
-				Bold:   value,
-			},
-		}
-		richTexts = append(richTexts, richText)
 
+	switch o := value.(type) {
+	case []string:
+		for _, value := range o {
+
+			richText := excelize.RichTextRun{
+				Text: fmt.Sprintf("%s\n", value),
+				Font: &excelize.Font{
+					Family: "Century Gothic",
+					Size:   8,
+					Bold:   false,
+				},
+			}
+			richTexts = append(richTexts, richText)
+		}
 	}
 
 	return richTexts

@@ -21,8 +21,8 @@ type Type string
 
 // const ColumnType string
 const (
-	BOOLEAN Type = "BOOLEAN"
-	DATE    Type = "DATE"
-	FLOAT   Type = "FLOAT"
-	STRING  Type = "STRING"
+	DATE   Type = "DATE"
+	FLOAT  Type = "FLOAT"
+	STRING Type = "STRING"
+	LIST   Type = "LIST"
 )

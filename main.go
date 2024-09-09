@@ -25,12 +25,17 @@ func main() {
 			Id:    "nascimento",
 			Type:  xlsx.DATE,
 		},
+		{
+			Title: "Pessoas",
+			Id:    "pessoas",
+			Type:  xlsx.LIST,
+		},
 	}
 
 	datas := []map[string]any{
 		{"nome": "Andre", "valor": 2.50},
 		{"nome": "Andre", "nascimento": time.Now()},
-		{"nome": "Andre"},
+		{"nome": "Andre", "pessoas": []string{"-André", "-Luis"}},
 	}
 
 	sheet := xlsx.Sheet{
