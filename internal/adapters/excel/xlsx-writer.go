@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"time"
 
 	"github.com/xuri/excelize/v2"
 )
@@ -102,7 +103,7 @@ func (x *xlsxWriter) setTitle(sw *excelize.StreamWriter, columns []xlsx.Column, 
 	return currentRowIndex
 }
 
-func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, columns []xlsx.Column, data []map[string]any, styles fileStyles) int {
+func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, columns []xlsx.Column, data []map[string]interface{}, styles fileStyles) int {
 	for i := 0; i < len(data); i++ {
 		cell := x.cell(currentRowIndex, 0)
 		rows := make([]interface{}, 0)
@@ -113,7 +114,12 @@ func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, co
 			case xlsx.FLOAT:
 				cel = x.getCell(value, styles.floatStyle)
 			case xlsx.DATE:
-				cel = x.getCell(value, styles.dateStyle)
+
+				value, err := time.Parse(time.RFC3339, fmt.Sprintf("%s", value))
+				if err == nil {
+					cel = x.getCell(value, styles.dateStyle)
+				}
+
 			case xlsx.LIST:
 				cel = x.getRichTextCell(value)
 			default:
@@ -144,9 +150,8 @@ func (*xlsxWriter) getRichTextCell(value interface{}) []excelize.RichTextRun {
 	richTexts := make([]excelize.RichTextRun, 0)
 
 	switch o := value.(type) {
-	case []string:
+	case []interface{}:
 		for _, value := range o {
-
 			richText := excelize.RichTextRun{
 				Text: fmt.Sprintf("%s\n", value),
 				Font: &excelize.Font{

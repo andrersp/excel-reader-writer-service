@@ -12,9 +12,9 @@ type Column struct {
 } //@Name Column
 
 type Sheet struct {
-	Name    string           `json:"name"`
-	Columns []Column         `json:"columns"`
-	Data    []map[string]any `json:"data"`
+	Name    string                   `json:"name"`
+	Columns []Column                 `json:"columns"`
+	Data    []map[string]interface{} `json:"data"`
 } //@Name Sheet
 
 type Type string

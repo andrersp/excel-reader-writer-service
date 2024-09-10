@@ -30,6 +30,11 @@ func main() {
 			Id:    "pessoas",
 			Type:  xlsx.LIST,
 		},
+		{
+			Title: "Data de Nascimento (PF)/Data de Abertura (PJ)",
+			Id:    "nascimento",
+			Type:  xlsx.DATE,
+		},
 	}
 
 	datas := []map[string]any{
