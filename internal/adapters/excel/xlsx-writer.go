@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"time"
 
 	"github.com/xuri/excelize/v2"
 )
@@ -33,6 +34,7 @@ func (x *xlsxWriter) Write(sheets []xlsx.Sheet) (bytes.Buffer, error) {
 	f := excelize.NewFile()
 
 	x.createSheets(f, sheets)
+	f.SaveAs("file.xlsx")
 
 	writer := bufio.NewWriter(&b)
 	if err := f.Write(writer); err != nil {
@@ -101,7 +103,7 @@ func (x *xlsxWriter) setTitle(sw *excelize.StreamWriter, columns []xlsx.Column, 
 	return currentRowIndex
 }
 
-func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, columns []xlsx.Column, data []xlsx.Data, styles fileStyles) int {
+func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, columns []xlsx.Column, data []map[string]interface{}, styles fileStyles) int {
 	for i := 0; i < len(data); i++ {
 		cell := x.cell(currentRowIndex, 0)
 		rows := make([]interface{}, 0)
@@ -109,11 +111,16 @@ func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, co
 			var cel interface{}
 			value := data[i][col.Id]
 			switch col.Type {
-			case "moeda":
+			case xlsx.FLOAT:
 				cel = x.getCell(value, styles.floatStyle)
-			case "data":
-				cel = x.getCell(value, styles.dateStyle)
-			case "mapBool":
+			case xlsx.DATE:
+
+				value, err := time.Parse(time.RFC3339, fmt.Sprintf("%s", value))
+				if err == nil {
+					cel = x.getCell(value, styles.dateStyle)
+				}
+
+			case xlsx.LIST:
 				cel = x.getRichTextCell(value)
 			default:
 				cel = x.getCell(value, styles.defaultStyle)
@@ -140,19 +147,21 @@ func (*xlsxWriter) getCell(value interface{}, styleId int) excelize.Cell {
 }
 
 func (*xlsxWriter) getRichTextCell(value interface{}) []excelize.RichTextRun {
-	data := value.(map[string]bool)
 	richTexts := make([]excelize.RichTextRun, 0)
-	for key, value := range data {
-		richText := excelize.RichTextRun{
-			Text: fmt.Sprintf("%s\n", key),
-			Font: &excelize.Font{
-				Family: "Century Gothic",
-				Size:   8,
-				Bold:   value,
-			},
-		}
-		richTexts = append(richTexts, richText)
 
+	switch o := value.(type) {
+	case []interface{}:
+		for _, value := range o {
+			richText := excelize.RichTextRun{
+				Text: fmt.Sprintf("%s\n", value),
+				Font: &excelize.Font{
+					Family: "Century Gothic",
+					Size:   8,
+					Bold:   false,
+				},
+			}
+			richTexts = append(richTexts, richText)
+		}
 	}
 
 	return richTexts
