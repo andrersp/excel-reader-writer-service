@@ -4,5 +4,4 @@ swagger:
 
 .PHONY: dev
 dev:
-	make swagger
-	go run cmd/http/main.go
+	air

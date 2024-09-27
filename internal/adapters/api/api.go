@@ -12,7 +12,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 type api struct {
@@ -42,7 +41,6 @@ func (a *api) Start() error {
 func NewApi() *api {
 	e := echo.New()
 	e.Use(middleware.Recover())
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.Use(middlewares.LoggerMiddleware)
 	e.GET("/health", func(c echo.Context) error {
 		return c.NoContent(http.StatusOK)

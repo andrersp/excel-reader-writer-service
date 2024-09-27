@@ -114,14 +114,12 @@ func (x *xlsxWriter) setTable(sw *excelize.StreamWriter, currentRowIndex int, co
 			case xlsx.FLOAT:
 				cel = x.getCell(value, styles.floatStyle)
 			case xlsx.DATE:
-
 				value, err := time.Parse(time.RFC3339, fmt.Sprintf("%s", value))
 				if err == nil {
 					cel = x.getCell(value, styles.dateStyle)
 				}
-
-			case xlsx.LIST:
-				cel = x.getRichTextCell(value)
+			case xlsx.LIST, xlsx.MAP_BOOL:
+				cel = x.getListRichText(value)
 			default:
 				cel = x.getCell(value, styles.defaultStyle)
 
@@ -146,22 +144,66 @@ func (*xlsxWriter) getCell(value interface{}, styleId int) excelize.Cell {
 	}
 }
 
-func (*xlsxWriter) getRichTextCell(value interface{}) []excelize.RichTextRun {
+func (*xlsxWriter) getListRichText(value interface{}) []excelize.RichTextRun {
 	richTexts := make([]excelize.RichTextRun, 0)
 
-	switch o := value.(type) {
-	case []interface{}:
-		for _, value := range o {
+	switch output := value.(type) {
+	case map[string]interface{}:
+		for key, value := range output {
 			richText := excelize.RichTextRun{
-				Text: fmt.Sprintf("%s\n", value),
+				Text: fmt.Sprintf("%s\n", key),
 				Font: &excelize.Font{
 					Family: "Century Gothic",
 					Size:   8,
-					Bold:   false,
 				},
 			}
+			if bold, ok := value.(bool); ok {
+				richText.Font.Bold = bold
+			}
 			richTexts = append(richTexts, richText)
+
 		}
+	case []interface{}:
+		{
+			for _, value := range output {
+				richText := excelize.RichTextRun{
+					Text: fmt.Sprintf("%s\n", value),
+					Font: &excelize.Font{
+						Family: "Century Gothic",
+						Size:   8,
+					},
+				}
+				richTexts = append(richTexts, richText)
+
+			}
+		}
+
+	}
+
+	return richTexts
+
+}
+
+func (*xlsxWriter) getMapBoolRichText(value interface{}) []excelize.RichTextRun {
+	richTexts := make([]excelize.RichTextRun, 0)
+
+	switch output := value.(type) {
+	case map[string]interface{}:
+		for key, value := range output {
+			richText := excelize.RichTextRun{
+				Text: fmt.Sprintf("%s\n", key),
+				Font: &excelize.Font{
+					Family: "Century Gothic",
+					Size:   8,
+				},
+			}
+			if bold, ok := value.(bool); ok {
+				richText.Font.Bold = bold
+			}
+			richTexts = append(richTexts, richText)
+
+		}
+
 	}
 
 	return richTexts

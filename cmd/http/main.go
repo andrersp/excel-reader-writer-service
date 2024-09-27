@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "excel/docs"
 	"excel/internal/adapters/api"
 	"excel/internal/adapters/config"
 	"excel/internal/adapters/excel"

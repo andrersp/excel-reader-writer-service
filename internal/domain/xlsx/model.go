@@ -17,12 +17,13 @@ type Sheet struct {
 	Data    []map[string]interface{} `json:"data"`
 } //@Name Sheet
 
-type Type string
+type Type int
 
 // const ColumnType string
 const (
-	DATE   Type = "DATE"
-	FLOAT  Type = "FLOAT"
-	STRING Type = "STRING"
-	LIST   Type = "LIST"
+	STRING Type = iota
+	DATE
+	FLOAT
+	LIST
+	MAP_BOOL
 )

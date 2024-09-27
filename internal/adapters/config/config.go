@@ -17,7 +17,6 @@ func LoadConfig() error {
 
 	if err != nil && APP_ENV == "LOCAL" {
 		return err
-
 	}
 	APP_PORT = getEnv("APP_PORT", "8080")
 
